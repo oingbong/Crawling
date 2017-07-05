@@ -5,7 +5,13 @@ var Schema 		= mongoose.Schema;
 	이전에는 이미 스키마가 정의되어 있고 다시 스키마를 정의하므로 오류를 발생하였습니다.
 */
 var sampleSchema = new Schema({
-   row1:String
+   title:String
+   , viewCount:String
+   , questionTime:String
+   , questionUserName:String
+   , questionUserUrl:String
+   , answersCount:String
+   , answerTime:String
 });
 module.exports = mongoose.model('sofData', sampleSchema);
 /*
