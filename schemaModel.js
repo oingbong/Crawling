@@ -12,6 +12,7 @@ var sampleSchema = new Schema({
    , questionUserUrl:String
    , answersCount:String
    , answerTime:String
+   , tagList:Array
 });
 module.exports = mongoose.model('sofData', sampleSchema);
 /*

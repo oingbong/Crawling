@@ -12,7 +12,8 @@ requestServer(1, 0); // 1: tabNumber
 function requestServer(tabNumber, earlyAnswerDate) {
     // 시작할 게시물 번호 세팅
     if (setPageNumber == undefined)
-        setPageNumber = 37000000;
+        //setPageNumber = 37000000;
+        setPageNumber = 44917391;
 
     var options = {
         url: 'https://stackoverflow.com/questions/' + setPageNumber + '?page=' + tabNumber + '&answertab=votes',
@@ -83,6 +84,7 @@ function convertData(data, tabNumber, earlyAnswerDate){
     let parseQuestionUserUrl = $('#question > table > tbody > tr:nth-child(1) > .postcell > div > .fw > tbody > tr > .owner > .user-info > div:nth-child(3) > a'); 
     let parseAnswersCount = $('#answers-header > div > h2 > span');
     let answers = $('#answers > .answer'); // answers 의 아이디값을 가져옵니다. comment 에서 사용
+    let parseTagList = $('.post-taglist > a[rel=tag]'); // tag 배열값
 
     let title = parseTitle.text();
     let viewCount = parseViewCount.text(); // text() , html() 둘다 같음
@@ -90,6 +92,10 @@ function convertData(data, tabNumber, earlyAnswerDate){
     let questionUserName = parseQuestionUserName.text(); // text() , html() 둘다 같음
     let questionUserUrl = parseQuestionUserUrl.attr('href'); // href 속성값 가져오기 위해 사용
     let answersCount = parseAnswersCount.text(); // text() , html() 둘다 같음
+    let tagList = []; // 게시물의 tag 된 목록을 저장합니다.
+    for(var i=0; i < parseTagList.length; i++){
+        tagList.push(parseTagList[i].attribs.href.split('/')[3]);
+    }
 
     // console.log('title : ' + title);
     // console.log('viewCount : ' + viewCount); 
@@ -97,6 +103,7 @@ function convertData(data, tabNumber, earlyAnswerDate){
     // console.log('questionUserName : ' + questionUserName);
     // console.log('questionUserUrl : ' + questionUserUrl);
     // console.log('answersCount : ' + answersCount);
+    // console.log('tagList', tagList);
 
     /*
         응답 시간 구하기 위해 응답의 각 id 를 배열로 가져옵니다.
@@ -112,13 +119,13 @@ function convertData(data, tabNumber, earlyAnswerDate){
     if(answersCount == ''){
         setPageNumber++;
         requestServer(1, 0);
-        mongoConnectAndInsertData(title, viewCount, questionTime, questionUserName, questionUserUrl, answersCount, null);
+        mongoConnectAndInsertData(title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount, null);
     }else{
-        comment(data, commentArr, earlyAnswerDate, tabNumber, title, viewCount, questionTime, questionUserName, questionUserUrl, answersCount);
+        comment(data, commentArr, earlyAnswerDate, tabNumber, title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount);
     }
 }
 
-function comment(data, arr, earlyAnswerDate, tabNumber, title, viewCount, questionTime, questionUserName, questionUserUrl, answersCount){
+function comment(data, arr, earlyAnswerDate, tabNumber, title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount){
     var findQuickDate = []; // answer 중에 가장 빠른 시간 찾기 위한 배열
 
     $ = cheerio.load(data);
@@ -159,7 +166,7 @@ function comment(data, arr, earlyAnswerDate, tabNumber, title, viewCount, questi
 }
 
 
-function mongoConnectAndInsertData(title, viewCount, questionTime, questionUserName, questionUserUrl, answersCount, earliestDate){
+function mongoConnectAndInsertData(title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount, earliestDate){
     if(earliestDate == null){
         earliestDate = 0;
     }
@@ -175,6 +182,7 @@ function mongoConnectAndInsertData(title, viewCount, questionTime, questionUserN
        , questionUserUrl: questionUserUrl
        , answersCount: answersCount
        , answerTime: earliestDate
+       , tagList: tagList
 	});
 	modelData.save(function(err){
 		if(err) console.log(err);
