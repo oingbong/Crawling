@@ -3,6 +3,7 @@ var request     = require('request');
 var cheerio     = require('cheerio');
 var http        = require('http');
 var mongoose    = require('mongoose');
+var sleep       = require('sleep');
 
 var setPageNumber; // 하나씩 증가하기 위해 글로벌 선언
 var dataCheck = []; // 중복 데이터 확인하기 위한 것 , 추후 DB의 값을 가져와서 비교
@@ -10,10 +11,13 @@ var dataCheck = []; // 중복 데이터 확인하기 위한 것 , 추후 DB의 �
 requestServer(1, 0); // 1: tabNumber
 
 function requestServer(tabNumber, earlyAnswerDate) {
+
+    sleep.msleep(2000);
+
     // 시작할 게시물 번호 세팅
     if (setPageNumber == undefined)
         //setPageNumber = 37000000;
-        setPageNumber = 44917391;
+        setPageNumber = 1;
 
     var options = {
         url: 'https://stackoverflow.com/questions/' + setPageNumber + '?page=' + tabNumber + '&answertab=votes',
@@ -117,9 +121,9 @@ function convertData(data, tabNumber, earlyAnswerDate){
 
     // comment 가 있다면 데이터 추가하고 없다면 다음페이지 이동( 기준 : answersCount)
     if(answersCount == ''){
+        mongoConnectAndInsertData(title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount, null);
         setPageNumber++;
         requestServer(1, 0);
-        mongoConnectAndInsertData(title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount, null);
     }else{
         comment(data, commentArr, earlyAnswerDate, tabNumber, title, viewCount, questionTime, questionUserName, questionUserUrl, tagList, answersCount);
     }
